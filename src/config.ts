@@ -16,6 +16,7 @@ const DEFAULT_CONFIG: PiBrowserConfig = {
 	denyOrigins: [],
 	requireConfirmation: [],
 	headless: true,
+	executablePath: undefined,
 	recordVideo: true,
 	showCursor: true,
 	showClickIndicators: true,
@@ -79,6 +80,10 @@ export function readConfig(path = CONFIG_PATH): PiBrowserConfig {
 			DEFAULT_CONFIG.requireConfirmation,
 		),
 		headless: raw.headless !== false,
+		executablePath:
+			typeof raw.executablePath === "string" && raw.executablePath.trim()
+				? resolve(expandHome(raw.executablePath))
+				: undefined,
 		recordVideo: raw.recordVideo !== false,
 		showCursor: raw.showCursor !== false,
 		showClickIndicators: raw.showClickIndicators !== false,

@@ -66,17 +66,19 @@ export class PiBrowserManager {
 		if (input.recordVideo ?? config.recordVideo)
 			await mkdir(join(outputDir, "videos"), { recursive: true });
 
-		await ensureChromium();
+		if (!config.executablePath) await ensureChromium();
 		// Playwright is imported lazily so loading the extension never depends on it.
 		const { chromium } = await import("playwright");
 
 		const requestedHeadless = input.headless ?? config.headless;
 		const launchOptions = {
-			// On macOS this keeps the full Chromium build, which supports both
-			// headless and a visible window if the host process forbids headless.
-			...(process.platform === "darwin"
-				? { channel: "chromium" as const }
-				: { chromiumSandbox: true }),
+			...(config.executablePath
+				? { executablePath: config.executablePath }
+				: // On macOS this keeps the full Chromium build, which supports both
+				  // headless and a visible window if the host process forbids headless.
+				  process.platform === "darwin"
+					? { channel: "chromium" as const }
+					: { chromiumSandbox: true }),
 			timeout: 20_000,
 			env: {},
 			args: [

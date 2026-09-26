@@ -11,6 +11,13 @@ export interface PiBrowserConfig {
 	/** Origins whose tool calls require an explicit user confirmation first. */
 	requireConfirmation: string[];
 	headless: boolean;
+	/**
+	 * Optional path to a system Chromium/Chrome binary. When set, the bundled
+	 * Playwright browser download is skipped and this executable is launched
+	 * instead. Required on NixOS, where the generic-Linux Playwright builds do
+	 * not run without nix-ld.
+	 */
+	executablePath?: string;
 	recordVideo: boolean;
 	showCursor: boolean;
 	showClickIndicators: boolean;

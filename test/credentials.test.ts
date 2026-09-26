@@ -4,7 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
+	readDecisionCredentials,
 	readJevCredentials,
+	readOpenRouterCredentials,
 	readTextHelperModel,
 } from "../src/credentials.ts";
 
@@ -75,6 +77,73 @@ test("credential file handles JSON syntax, precedence, reloads and missing keys"
 		assert.throws(
 			() => readJevCredentials({ path: directory, env: {} }),
 			/Cannot read/,
+		);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+test("OpenRouter credentials read from config and environment, and win when both providers are configured", () => {
+	const directory = mkdtempSync(join(tmpdir(), "pi-jev-browser-openrouter-"));
+	const path = join(directory, "config.json");
+	try {
+		assert.throws(
+			() => readOpenRouterCredentials({ path, env: {} }),
+			/OPENROUTER_API_KEY/,
+		);
+		writeFileSync(
+			path,
+			JSON.stringify({
+				openrouter: {
+					apiKey: "or-file-key",
+					model: "typesafe/jev-1.13",
+				},
+				typesafe: { apiKey: "ts-file-key", model: "jev-latest" },
+			}),
+			{ mode: 0o600 },
+		);
+		assert.deepEqual(readOpenRouterCredentials({ path, env: {} }), {
+			provider: "openrouter",
+			apiKey: "or-file-key",
+			baseUrl: "https://openrouter.ai/api",
+			model: "typesafe/jev-1.13",
+		});
+		assert.deepEqual(readDecisionCredentials({ path, env: {} }), {
+			provider: "openrouter",
+			apiKey: "or-file-key",
+			baseUrl: "https://openrouter.ai/api",
+			model: "typesafe/jev-1.13",
+		});
+		assert.deepEqual(
+			readDecisionCredentials({
+				path,
+				env: {
+					OPENROUTER_API_KEY: "env-or",
+					OPENROUTER_BASE_URL: "https://or.example.test",
+					OPENROUTER_DEFAULT_MODEL: "typesafe/jev-1.12",
+				},
+			}),
+			{
+				provider: "openrouter",
+				apiKey: "env-or",
+				baseUrl: "https://or.example.test",
+				model: "typesafe/jev-1.12",
+			},
+		);
+		// Without an OpenRouter key anywhere, the TypeSafe path wins and its error
+		// message names both providers.
+		writeFileSync(path, JSON.stringify({ typesafe: { apiKey: "ts-only" } }));
+		assert.deepEqual(readDecisionCredentials({ path, env: {} }), {
+			provider: "typesafe",
+			apiKey: "ts-only",
+			baseUrl: "https://api.typesafe.ai",
+			model: "jev-latest",
+		});
+		// Neither provider configured: the failure names TYPESAFE_API_KEY.
+		writeFileSync(path, "{}");
+		assert.throws(
+			() => readDecisionCredentials({ path, env: {} }),
+			/TYPESAFE_API_KEY/,
 		);
 	} finally {
 		rmSync(directory, { recursive: true, force: true });

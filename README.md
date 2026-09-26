@@ -227,6 +227,7 @@ file.
   "popups": "stay",
   "profile": "session",
   "typesafe": { "apiKey": "", "baseUrl": "https://api.typesafe.ai", "model": "jev-latest" },
+  "openrouter": { "apiKey": "", "baseUrl": "https://openrouter.ai/api", "model": "typesafe/jev-1.13" },
   "textHelper": { "model": "" },
   "desktop": { "requireConfirmation": true }
 }
@@ -247,7 +248,12 @@ file.
   shared profile costs.
 
 Environment overrides: `TYPESAFE_API_KEY`, `TYPESAFE_BASE_URL`,
-`TYPESAFE_DEFAULT_MODEL`, `PI_JEV_BROWSER_TEXT_MODEL`, `PI_JEV_BROWSER_CONFIG`.
+`TYPESAFE_DEFAULT_MODEL`, `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`,
+`OPENROUTER_DEFAULT_MODEL`, `PI_JEV_BROWSER_TEXT_MODEL`, `PI_JEV_BROWSER_CONFIG`.
+OpenRouter is used when either `OPENROUTER_API_KEY` or `openrouter.apiKey` is
+set; it serves Jev (TypeSafe System One) on its decisions endpoint
+(`https://openrouter.ai/api/alpha/decisions`) with the same `{ state, questions }`
+payload TypeSafe accepts. Otherwise the TypeSafe path is used as before.
 Credentials are read on every run, are never passed to Chromium, and never appear in
 tool results. The config path is resolved once when pi starts, so restart pi after
 changing `PI_JEV_BROWSER_CONFIG`.

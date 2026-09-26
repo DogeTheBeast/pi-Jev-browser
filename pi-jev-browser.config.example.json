@@ -25,6 +25,11 @@
     "baseUrl": "https://api.typesafe.ai",
     "model": "jev-latest"
   },
+  "openrouter": {
+    "apiKey": "",
+    "baseUrl": "https://openrouter.ai/api",
+    "model": "typesafe/jev-1.13"
+  },
   "textHelper": {
     "model": ""
   },
